@@ -1,0 +1,60 @@
+# =======================
+# Python
+# =======================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+*.egg
+*.log
+
+# byte-compiled / optimized / DLL files
+*.so
+*.dll
+*.dylib
+
+# =======================
+# Virtual Environment
+# =======================
+venv/
+.venv/
+env/
+.env/
+
+# =======================
+# PyInstaller or build output
+# =======================
+build/
+dist/
+*.spec
+
+# =======================
+# Qt / PyQt generated files
+# =======================
+*.qrc
+*.ui.py  # UI 파일 convert 후 생성되는 경우
+*.qt6rc
+*.qmlc
+*.jsc
+
+# =======================
+# OS
+# =======================
+.DS_Store
+Thumbs.db
+
+# =======================
+# IDE / Editor
+# =======================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =======================
+# Others
+# =======================
+*.bak
+*.tmp
