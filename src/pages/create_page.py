@@ -1,9 +1,10 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QLineEdit, QTextEdit, QHBoxLayout
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QLineEdit, QTextEdit, QHBoxLayout, QMessageBox
 from PyQt6.QtCore import Qt, pyqtSignal
 
 # 리스트, 게시글 작성 버튼
 class CreatePage(QWidget):
     finished = pyqtSignal()
+    saved = pyqtSignal(dict)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -34,6 +35,7 @@ class CreatePage(QWidget):
 
         # 2-2. TODO: 저장 버튼 -> DB 저장, message -> finished
         save_btn = QPushButton("저장")
+        save_btn.clicked.connect(self.save_post)
 
         button_row.addWidget(cancel_btn)
         button_row.addWidget(save_btn)
@@ -55,17 +57,37 @@ class CreatePage(QWidget):
 
         self.setLayout(layout)
 
-    # TODO: save logic, message box
-    def create_post(self, title:str, author:str, content:str) -> int:
-        if len(title) > 100:
-            raise ValueError("제목을 100자 이내로 작성해 주십시오.")
-        if len(author) > 20:
-            raise ValueError("작성자를 20자 이내로 작성해 주십시오.")
+    def save_post(self):
+        title = self.title_input.text().strip()
+        author = self.author_input.text().strip()
+        content = self.content_input.toPlainText().strip()
 
-        cursor = self.conn.cursor()
-        cursor.execute(
-            "INSERT INTO posts (title, author, content) VALUES (?, ?, ?)",
-            (title, author, content)
-        )
-        self.conn.commit()
-        return cursor.lastrowid
+        # 유효성 검사
+        if not title:
+            QMessageBox.warning(self, "입력 오류", "제목을 입력해 주세요.")
+            return
+        if len(title) > 100:
+            QMessageBox.warning(self, "입력 오류", "제목은 100자 이내로 입력해 주세요.")
+            return
+
+        if not author:
+            QMessageBox.warning(self, "입력 오류", "작성자를 입력해 주세요.")
+            return
+        if len(author) > 20:
+            QMessageBox.warning(self, "입력 오류", "작성자명은 20자 이내로 입력해 주세요.")
+            return
+
+        if not content:
+            QMessageBox.warning(self, "입력 오류", "내용을 입력해 주세요.")
+            return
+
+        data = {
+            "title": title,
+            "author": author,
+            "content": content
+        }
+        self.saved.emit(data)
+
+        self.title_input.clear()
+        self.author_input.clear()
+        self.content_input.clear()

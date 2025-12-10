@@ -1,10 +1,9 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QTableWidget, QTableWidgetItem
 from PyQt6.QtCore import Qt, pyqtSignal
 
 # 리스트, 게시글 작성 버튼
 class ListPage(QWidget):
-    # signal-slot
-    request_create = pyqtSignal()
+    request_create = pyqtSignal()    # signal-slot main으로
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -19,7 +18,11 @@ class ListPage(QWidget):
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title_label.setStyleSheet("font-size: 20px; font-weight: bold;")
 
-        # 2. TODO: 목록
+        # 2. 목록 table
+        self.table = QTableWidget()
+        self.table.setColumnCount(4)
+        self.table.setHorizontalHeaderLabels(["No.", "제목", "작성자", "작성일자"])
+        self.table.horizontalHeader().setStretchLastSection(True)
 
         # 3. 게시글 작성 버튼 -> main에 signal
         create_btn = QPushButton("게시글 작성")
@@ -28,6 +31,26 @@ class ListPage(QWidget):
 
         # widget 배치
         layout.addWidget(title_label)
+        layout.addWidget(self.table)
         layout.addWidget(create_btn, alignment=Qt.AlignmentFlag.AlignRight)
 
         self.setLayout(layout)
+
+    def load_posts(self, posts: list):
+        self.table.setRowCount(len(posts))
+
+        for row_idx, post in enumerate(posts):
+            num_col = QTableWidgetItem(str(row_idx + 1))
+            title_col = QTableWidgetItem(post["title"])
+            author_col = QTableWidgetItem(post["author"])
+            date_col = QTableWidgetItem(post["created_at"])
+
+            # 정렬
+            num_col.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            author_col.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            date_col.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+
+            self.table.setItem(row_idx, 0, num_col)
+            self.table.setItem(row_idx, 1, title_col)
+            self.table.setItem(row_idx, 2, author_col)
+            self.table.setItem(row_idx, 3, date_col)

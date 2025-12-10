@@ -43,15 +43,28 @@ class DBManager:
 
     def get_list(self) -> list[sqlite3.Row]:
         cursor = self.conn.cursor()
-        # TODO: 목록에 보여줄 것만 가져오기
         cursor.execute(
             """
-            SELECT * FROM posts
+            SELECT id, title, author, created_at
+            FROM posts
+            WHERE is_deleted = 0
             ORDER BY created_at DESC
             """
         )
         rows = cursor.fetchall()
         return rows
+
+    def create_post(self, title: str, author: str, content: str) -> int:
+        cursor = self.conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO posts (title, author, content)
+            VALUES (?, ?, ?)
+            """,
+            (title, author, content),
+        )
+        self.conn.commit()
+        return cursor.lastrowid
 
     def update_post(self, post_id: int, title: str, author: str, content: str) -> None:
         cursor = self.conn.cursor()
