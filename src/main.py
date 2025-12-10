@@ -41,6 +41,7 @@ class MainWindow(QMainWindow):
         self.create_page.saved.connect(self.handle_post_saved)          # create page -> 저장 btn -> list
 
         self.detail_page.back_to_list.connect(self.show_list_page)      # detail page -> 목록으로 btn -> list
+        self.detail_page.deleted.connect(self.handle_post_deleted)      # detail page -> 삭제
 
         # QStackedWidget에 페이지 등록
         self.stacked_widget.addWidget(self.list_page)   # index 0
@@ -75,6 +76,11 @@ class MainWindow(QMainWindow):
         )
         QMessageBox.information(self, "저장 완료", "게시글이 저장되었습니다.")
         self.show_detail_page(post_id)
+
+    def handle_post_deleted(self, post_id: int):
+        self.db.delete_post(post_id)
+        QMessageBox.information(self, "삭제 완료", "게시글이 삭제되었습니다.")
+        self.show_list_page()
 
     def closeEvent(self, event):
         # 창 닫힐 때 DB Manager close

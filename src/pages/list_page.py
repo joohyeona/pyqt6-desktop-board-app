@@ -65,5 +65,4 @@ class ListPage(QWidget):
 
     def click_row(self, row:int, column: int):
         post_id = self.post_ids[row]
-        print(post_id)
         self.request_detail.emit(post_id)

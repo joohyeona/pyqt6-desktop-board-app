@@ -2,10 +2,12 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QTextEdit
 from PyQt6.QtCore import Qt, pyqtSignal
 
 class DetailPage(QWidget):
-    back_to_list = pyqtSignal()
+    back_to_list = pyqtSignal() # 목록으로
+    deleted = pyqtSignal(int)  # 삭제
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._post_id: int   # 현재 페이지 id
         self._setup_ui()
 
     def _setup_ui(self):
@@ -39,8 +41,9 @@ class DetailPage(QWidget):
         button_row = QHBoxLayout()
         update_btn = QPushButton("수정")
         # TODO: 수정 logic
+
         delete_btn = QPushButton("삭제")
-        # TODO: 삭제 logic
+        delete_btn.clicked.connect(self.delete_post)
 
         button_row.addWidget(update_btn)
         button_row.addWidget(delete_btn)
@@ -61,6 +64,8 @@ class DetailPage(QWidget):
             QMessageBox.warning(self, "Error", "존재하지 않는 게시글입니다.")
             return
 
+        self._post_id = post["id"]   # 현재 페이지 id
+
         self.title_view.setText(post["title"])
         self.author_view.setText(post["author"])
         self.created_view.setText(post["created_at"])
@@ -72,3 +77,19 @@ class DetailPage(QWidget):
         else:
             self.updated_view.setText("-")
             self.updated_view.setStyleSheet("color: gray;")
+
+    def delete_post(self):
+        if self._post_id is None:
+            QMessageBox.warning(self, "Error", "삭제할 게시글 정보가 없습니다.")
+            return
+
+        reply = QMessageBox.question(
+            self,
+            "게시글 삭제하기",
+            "게시글을 삭제하시겠습니까?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
+        )
+
+        if reply == QMessageBox.StandardButton.Yes:
+            self.deleted.emit(self._post_id)
