@@ -55,4 +55,17 @@ class CreatePage(QWidget):
 
         self.setLayout(layout)
 
-    # TODO: save logic
+    # TODO: save logic, message box
+    def create_post(self, title:str, author:str, content:str) -> int:
+        if len(title) > 100:
+            raise ValueError("제목을 100자 이내로 작성해 주십시오.")
+        if len(author) > 20:
+            raise ValueError("작성자를 20자 이내로 작성해 주십시오.")
+
+        cursor = self.conn.cursor()
+        cursor.execute(
+            "INSERT INTO posts (title, author, content) VALUES (?, ?, ?)",
+            (title, author, content)
+        )
+        self.conn.commit()
+        return cursor.lastrowid

@@ -1,7 +1,10 @@
 import sys
+from pathlib import Path
+
 from PyQt6.QtWidgets import QApplication, QMainWindow, QStackedWidget
 
-from pages import ListPage, CreatePage # init으로 import
+from pages import ListPage, CreatePage
+from db.db_manager import DBManager
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -9,6 +12,12 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("DDE Desktop Board")
         self.setMinimumSize(800, 600)
+
+        # DB 연결
+        base_dir = Path(__file__).resolve().parent
+        db_path = base_dir / "board.sqlite3"
+        self.db = DBManager(db_path)
+        # print("db연결됨:", len(self.db.get_list()))
 
         # QStackedWidget으로 페이지 전환
         self.stacked_widget = QStackedWidget()
@@ -43,6 +52,13 @@ class MainWindow(QMainWindow):
     def show_create_page(self):
         # 게시글 작성 페이지
         self.stacked_widget.setCurrentIndex(self.PAGE_INDEX_CREATE)
+
+    def closeEvent(self, event):
+        # 창 닫힐 때 DB Manager close
+        if hasattr(self, "db"):
+            self.db.close()
+
+        super().closeEvent(event)
 
 def main():
     app = QApplication(sys.argv)
