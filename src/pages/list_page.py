@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QTableWidget, QTableWidgetItem, QAbstractItemView
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QTableWidget, QTableWidgetItem, QAbstractItemView, QHeaderView
 from PyQt6.QtCore import Qt, pyqtSignal
 
 # 리스트, 게시글 작성 버튼
@@ -26,6 +26,12 @@ class ListPage(QWidget):
         self.table.setHorizontalHeaderLabels(["No.", "제목", "작성자", "작성일자"])
         self.table.horizontalHeader().setStretchLastSection(True)
 
+        header = self.table.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)         # edit block
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)  # 행 단위 선택
         self.table.cellClicked.connect(self.click_row)   # 행 클릭 -> 상세 페이지
@@ -43,6 +49,8 @@ class ListPage(QWidget):
         self.setLayout(layout)
 
     def load_posts(self, posts: list):
+        self.post_ids = []   # id 초기화 ~ db 업데이트 이후 post_id 꼬임
+        self.table.setRowCount(0)
         self.table.setRowCount(len(posts))
 
         for row_idx, post in enumerate(posts):
@@ -51,7 +59,7 @@ class ListPage(QWidget):
             num_col = QTableWidgetItem(str(row_idx + 1))
             title_col = QTableWidgetItem(post["title"])
             author_col = QTableWidgetItem(post["author"])
-            date_col = QTableWidgetItem(post["created_at"])
+            date_col = QTableWidgetItem(post["created_at"][:10])    # yyyy-mm-dd
 
             # 정렬
             num_col.setTextAlignment(Qt.AlignmentFlag.AlignCenter)

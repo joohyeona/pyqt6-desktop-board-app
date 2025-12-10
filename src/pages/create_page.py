@@ -8,6 +8,7 @@ class CreatePage(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._post_id: int | None = None  # 수정 | 신규 mode
         self._setup_ui()
 
     def _setup_ui(self):
@@ -29,11 +30,11 @@ class CreatePage(QWidget):
         # 2. 버튼 영역
         button_row = QHBoxLayout()
 
-        # 2-1. 취소 버튼 -> TODO:message -> finished
+        # 2-1. 취소 btn
         cancel_btn = QPushButton("취소")
-        cancel_btn.clicked.connect(self.finished.emit)
+        cancel_btn.clicked.connect(self.on_cancel)
 
-        # 2-2. TODO: 저장 버튼 -> DB 저장, message -> finished
+        # 2-2. 저장 btn
         save_btn = QPushButton("저장")
         save_btn.clicked.connect(self.save_post)
 
@@ -43,19 +44,48 @@ class CreatePage(QWidget):
 
         # add Widget
         layout.addWidget(title_label)
-
         layout.addWidget(QLabel("제목"))
         layout.addWidget(self.title_input)
-
         layout.addWidget(QLabel("작성자"))
         layout.addWidget(self.author_input)
-
         layout.addWidget(QLabel("내용"))
         layout.addWidget(self.content_input)
 
         layout.addLayout(button_row)
 
         self.setLayout(layout)
+
+    # 신규 작성 mode
+    def set_new(self):
+        self._post_id = None
+        self.title_input.clear()
+        self.author_input.clear()
+        self.content_input.clear()
+
+        # 원본 상태 저장 - 취소 시 비교
+        self._original = {
+            "title": "",
+            "author": "",
+            "content": ""
+        }
+
+    # 수정 mode
+    def set_detail(self, post):
+        if not post:
+            QMessageBox.warning(self, "Error", "수정 내용을 불러올 수 없습니다.")
+
+        self._post_id = post["id"]
+        self.title_input.setText(post["title"])
+        self.author_input.setText(post["author"])
+        self.content_input.setPlainText(post["content"])
+
+        # 원본 상태 저장 - 취소 시 비교
+        self._original = {
+            "title": post["title"],
+            "author": post["author"],
+            "content": post["content"]
+        }
+
 
     def save_post(self):
         title = self.title_input.text().strip()
@@ -86,8 +116,32 @@ class CreatePage(QWidget):
             "author": author,
             "content": content
         }
+        if self._post_id is not None:
+            data["id"] = self._post_id
+
         self.saved.emit(data)
 
         self.title_input.clear()
         self.author_input.clear()
         self.content_input.clear()
+
+    def on_cancel(self):
+        current = {
+            "title": self.title_input.text(),
+            "author": self.author_input.text(),
+            "content": self.content_input.toPlainText()
+        }
+
+        # 변경 내용 있을 시 alert
+        if current != self._original:
+            reply = QMessageBox.question(
+                self,
+                "Alert",
+                "변경 내용이 저장되지 않았습니다. 취소하시겠습니까?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No
+            )
+            if reply == QMessageBox.StandardButton.No:
+                return
+
+        self.finished.emit()

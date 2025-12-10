@@ -3,11 +3,12 @@ from PyQt6.QtCore import Qt, pyqtSignal
 
 class DetailPage(QWidget):
     back_to_list = pyqtSignal() # 목록으로
+    request_update = pyqtSignal(int)
     deleted = pyqtSignal(int)  # 삭제
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._post_id: int   # 현재 페이지 id
+        self._post_id: int  | None = None   # 현재 페이지 id
         self._setup_ui()
 
     def _setup_ui(self):
@@ -39,9 +40,9 @@ class DetailPage(QWidget):
 
         # btn
         button_row = QHBoxLayout()
-        update_btn = QPushButton("수정")
-        # TODO: 수정 logic
 
+        update_btn = QPushButton("수정")
+        update_btn.clicked.connect(self.update_post)
         delete_btn = QPushButton("삭제")
         delete_btn.clicked.connect(self.delete_post)
 
@@ -78,9 +79,16 @@ class DetailPage(QWidget):
             self.updated_view.setText("-")
             self.updated_view.setStyleSheet("color: gray;")
 
+    def update_post(self):
+        if self._post_id is None:
+            QMessageBox.warning(self, "Error", "게시글 정보를 찾을 수 없습니다.")
+            return
+
+        self.request_update.emit(self._post_id)
+
     def delete_post(self):
         if self._post_id is None:
-            QMessageBox.warning(self, "Error", "삭제할 게시글 정보가 없습니다.")
+            QMessageBox.warning(self, "Error", "게시글 정보를 찾을 수 없습니다.")
             return
 
         reply = QMessageBox.question(
