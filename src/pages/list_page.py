@@ -1,12 +1,14 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QTableWidget, QTableWidgetItem
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QTableWidget, QTableWidgetItem, QAbstractItemView
 from PyQt6.QtCore import Qt, pyqtSignal
 
 # 리스트, 게시글 작성 버튼
 class ListPage(QWidget):
     request_create = pyqtSignal()    # signal-slot main으로
+    request_detail = pyqtSignal(int) # detail page 요청
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.post_ids: list[int] = []   # 행별 post_id 저장
         self._setup_ui()
 
     def _setup_ui(self):
@@ -14,7 +16,7 @@ class ListPage(QWidget):
 
         ## 요소
         # 1. 제목
-        title_label = QLabel("게시글 목록")
+        title_label = QLabel("게시판")
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title_label.setStyleSheet("font-size: 20px; font-weight: bold;")
 
@@ -23,6 +25,10 @@ class ListPage(QWidget):
         self.table.setColumnCount(4)
         self.table.setHorizontalHeaderLabels(["No.", "제목", "작성자", "작성일자"])
         self.table.horizontalHeader().setStretchLastSection(True)
+
+        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)         # edit block
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)  # 행 단위 선택
+        self.table.cellClicked.connect(self.click_row)   # 행 클릭 -> 상세 페이지
 
         # 3. 게시글 작성 버튼 -> main에 signal
         create_btn = QPushButton("게시글 작성")
@@ -40,6 +46,8 @@ class ListPage(QWidget):
         self.table.setRowCount(len(posts))
 
         for row_idx, post in enumerate(posts):
+            self.post_ids.append(post["id"])
+
             num_col = QTableWidgetItem(str(row_idx + 1))
             title_col = QTableWidgetItem(post["title"])
             author_col = QTableWidgetItem(post["author"])
@@ -54,3 +62,8 @@ class ListPage(QWidget):
             self.table.setItem(row_idx, 1, title_col)
             self.table.setItem(row_idx, 2, author_col)
             self.table.setItem(row_idx, 3, date_col)
+
+    def click_row(self, row:int, column: int):
+        post_id = self.post_ids[row]
+        print(post_id)
+        self.request_detail.emit(post_id)
