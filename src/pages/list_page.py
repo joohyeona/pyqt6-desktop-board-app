@@ -25,6 +25,7 @@ class ListPage(QWidget):
         self.table.setColumnCount(4)
         self.table.setHorizontalHeaderLabels(["No.", "제목", "작성자", "작성일자"])
         self.table.horizontalHeader().setStretchLastSection(True)
+        self.table.verticalHeader().setVisible(False)   # numbering 중복 삭제
 
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
